@@ -13,21 +13,27 @@ void CreateBody(struct Body *body, float x, float y){
     body->isalive = true;
 }
 
-void UpdateBody(struct Body *body, float dt, int screen_height){
+void UpdateBody(struct Body *body, float dt, int screen_height, int screen_width){
 
-
-    
-
-    body->xv = 0;//пока времено
-
-    body->yv += 9.8f * dt;
+    body->yv += 9.86f * dt;
     body->y += body->yv * dt;
+    body->x += body->xv * dt;
 
     if (body->y + body->radius >= screen_height) {
         body->y  = screen_height - body->radius;
         body->yv = -body->yv * 0.8f;  // 0.8 = упругость
     }
    
+    if (body->x - body->radius <= 0) {
+        body->x = body->radius;
+        body->xv = -body->xv * 0.8f;
+    }
+
+    if (body->x + body->radius >= screen_width) {
+        body->x = screen_width - body->radius;
+        body->xv = -body->xv * 0.8f;
+    }
+
 }
 
 void DrawBody(struct Body *body, SDL_Renderer *renderer){
@@ -79,4 +85,40 @@ void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_
       }
 
     }
+}
+
+bool CheckCollision(struct Body *a, struct Body *b) {
+    float dx = a->x - b->x;
+    float dy = a->y - b->y;
+    float distance = sqrt(dx*dx + dy*dy);
+    return distance < (a->radius + b->radius);
+}
+
+void ResolveCollision(struct Body *a, struct Body *b) {
+    float dx = a->x - b->x;
+    float dy = a->y - b->y;
+    
+    float distance = sqrt(dx*dx + dy*dy);
+    float nx = dx / distance;
+    float ny = dy / distance;
+    
+    float overlap = (a->radius + b->radius) - distance;
+    
+    a->x -= (overlap / 2) * nx;
+    a->y -= (overlap / 2) * ny;
+    b->x += (overlap / 2) * nx;
+    b->y += (overlap / 2) * ny;
+    
+    float dvx = a->xv - b->xv;
+    float dvy = a->yv - b->yv;
+    float dot = dvx*nx + dvy*ny;
+
+    if (dot > 0) return;
+
+    float impulse = (2.0f * dot) / (1.0f/a->mass + 1.0f/b->mass);
+    
+    a->xv -= (impulse / a->mass) * nx;
+    a->yv -= (impulse / a->mass) * ny;
+    b->xv += (impulse / b->mass) * nx;
+    b->yv += (impulse / b->mass) * ny;
 }

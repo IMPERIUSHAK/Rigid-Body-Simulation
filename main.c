@@ -56,7 +56,6 @@ int main(void){
 
         // }
 
-
         SDL_SetRenderDrawColor(wind.renderer, 0, 0, 0, 255);
         SDL_RenderClear(wind.renderer);
 
@@ -64,8 +63,26 @@ int main(void){
         for (int i = 0; i < MAX_BODY; i++){
 
             if (body[i].isalive){    
-                UpdateBody(&body[i], 0.016f, wind.SCREEN_HEIGHT);
-                DrawBody(&body[i], wind.renderer);
+                UpdateBody(&body[i], 0.016f, wind.SCREEN_HEIGHT, wind.SCREEN_WIDTH);
+            }
+
+        }
+
+        for (int i = 0; i < MAX_BODY; i++){
+            for (int j = i+1; j < MAX_BODY; j++){
+                if (body[i].isalive && body[j].isalive){
+                    if (CheckCollision(&body[i], &body[j])){
+                       ResolveCollision(&body[i], &body[j]);
+                    }
+                }
+            }
+        }
+
+
+        for (int i = 0; i < MAX_BODY; i++){
+
+            if (body[i].isalive){    
+               DrawBody(&body[i], wind.renderer);
             }
 
         }
