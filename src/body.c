@@ -10,14 +10,23 @@ void CreateBody(struct Body *body, float x, float y){
     body->mass   = 20;//временно
     body->xv     = 0;
     body->yv     = 0;
+    body->isalive = true;
 }
 
-void UpdateBody(struct Body *body, float dt){
+void UpdateBody(struct Body *body, float dt, int screen_height){
+
+
+    
 
     body->xv = 0;//пока времено
 
     body->yv += 9.8f * dt;
     body->y += body->yv * dt;
+
+    if (body->y + body->radius >= screen_height) {
+        body->y  = screen_height - body->radius;
+        body->yv = -body->yv * 0.8f;  // 0.8 = упругость
+    }
    
 }
 
